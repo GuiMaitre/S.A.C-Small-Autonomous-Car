@@ -12,9 +12,11 @@ const int ECHO_PIN = A1;
 const int inter_time = 1000;
 
 void setup() {
+  //initialise the sonic sensor
   Serial.begin(9600);
   pinMode (TRIGGER_PIN, OUTPUT);
   pinMode (ECHO_PIN, INPUT);
+  //initialise the motor
   pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
@@ -29,9 +31,9 @@ void setup() {
 }
 
 void loop() {
+  //Get information from the sonic range sensor
   unsigned long duration;
   float distance;
-  int pwmOutput = 10;
   digitalWrite(TRIGGER_PIN, HIGH);
   delayMicroseconds(500);
   digitalWrite(TRIGGER_PIN, LOW);
