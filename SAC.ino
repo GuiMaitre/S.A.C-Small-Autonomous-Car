@@ -1,8 +1,8 @@
 //define all the L298N bridge pin that are used to control the 4 motor (interpreted as 2 motor for the board Left/Right)
 //Remake cable to avoid 9-10 of servo blocking the left side motors
-#define enA 2
-#define in1 1
-#define in2 0
+#define enA 11
+#define in1 8
+#define in2 4
 #define enB 5
 #define in3 7
 #define in4 6
@@ -14,7 +14,7 @@ Servo serv;
 int rotDirection = 0;
 const int TRIGGER_PIN = A0;
 const int ECHO_PIN = A1;
-const int inter_time = 500;
+const int inter_time = 250;
 //sensor face foward
 int angle = 153;
 
@@ -30,11 +30,11 @@ void setup() {
   pinMode(enB, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
-  // Set initial rotation direction
-  //digitalWrite(in1, LOW);
-  //digitalWrite(in2, HIGH);
-  //digitalWrite(in3, LOW);
-  //digitalWrite(in4, HIGH);
+  //Set initial rotation direction
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
   //attach the servo to the broche of the car and put it to the face
   serv.attach(9);
   serv.write(angle);
@@ -63,11 +63,10 @@ void loop() {
   Serial.print(", d = ");
   Serial.print(distance);
   Serial.println(" cm");
-  delay(inter_time);
 
 
-  //If no object at less than 20 centimeter continue to drive
-  if (distance > 20) {
+  //If no object at less than 30 centimeters continue to drive
+  if (distance > 30) {
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
     digitalWrite(in3, LOW);
@@ -78,10 +77,27 @@ void loop() {
     Serial.println(rotDirection);
   }
 
-  //Stop motor and invert the motor direction to turn left
-  if (distance <= 20) {
-    //analogWrite(enA, 0);
-    //analogWrite(enB, 0);
+  //Go backward go get less close to the wall
+  if (distance < 10){
+    analogWrite(enA, 0);
+    analogWrite(enB, 0);
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+    analogWrite(enA, 70);
+    analogWrite(enB, 70);
+  }
+  
+  //Stop motor and invert the motor direction to turn left or right
+  if (distance <= 30 && distance >=10) {
+    analogWrite(enA, 0);
+    analogWrite(enB, 0);
+    
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
     
 
     //check on left and right to choose the better place to go
@@ -98,26 +114,29 @@ void loop() {
 
     if (dist1 >= dist2){
       //turn left
-      digitalWrite(in1, HIGH);
-      digitalWrite(in2, LOW);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, HIGH);
-      analogWrite(enA, 100);
-      analogWrite(enB, 100);
-      rotDirection = 1;
-      Serial.println(rotDirection);
-      delayMicroseconds(1000);
-    } else {
-      //turn right
       digitalWrite(in1, LOW);
       digitalWrite(in2, HIGH);
       digitalWrite(in3, HIGH);
       digitalWrite(in4, LOW);
-      analogWrite(enA, 100);
+      analogWrite(enA, 150);
       analogWrite(enB, 100);
+      rotDirection = 1;
+      Serial.println(rotDirection);
+      delayMicroseconds(5000);
+      delay(inter_time*3);
+    } else {
+      //turn right
+      digitalWrite(in1, HIGH);
+      digitalWrite(in2, LOW);
+      digitalWrite(in3, LOW);
+      digitalWrite(in4, HIGH);
+
+      analogWrite(enA, 100);
+      analogWrite(enB, 150);
       rotDirection = 2;
       Serial.println(rotDirection);
-      delayMicroseconds(1000);
+      delayMicroseconds(5000);
+      delay(inter_time*3);
     }
   }
 }
