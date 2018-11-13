@@ -12,6 +12,7 @@ Servo serv;
 
 
 int rotDirection = 0;
+int intDist = 0;
 const int TRIGGER_PIN = A0;
 const int ECHO_PIN = A1;
 const int inter_time = 250;
@@ -66,31 +67,43 @@ void loop() {
 
 
   //If no object at less than 30 centimeters continue to drive
-  if (distance > 30) {
+  if (distance > 100) {
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
-    analogWrite(enA, 150);
-    analogWrite(enB, 150);
+    analogWrite(enA, 200);
+    analogWrite(enB, 200);
     rotDirection = 0;
     Serial.println(rotDirection);
   }
 
+  //from 100cm to 20cm do a decresing speed depending of distance  try to fix speed before hitting wall
+  if (distance <= 100 && distance >25) {
+    intDist = (int)distance;
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+    analogWrite(enA, intDist+75);
+    analogWrite(enB, intDist+75);
+  }
+
+   
   //Go backward go get less close to the wall
-  if (distance < 10){
+  if (distance < 15){
     analogWrite(enA, 0);
     analogWrite(enB, 0);
     digitalWrite(in1, HIGH);
     digitalWrite(in2, LOW);
     digitalWrite(in3, HIGH);
     digitalWrite(in4, LOW);
-    analogWrite(enA, 70);
-    analogWrite(enB, 70);
+    analogWrite(enA, 90);
+    analogWrite(enB, 90);
   }
   
   //Stop motor and invert the motor direction to turn left or right
-  if (distance <= 30 && distance >=10) {
+  if (distance <= 25 && distance >=15) {
     analogWrite(enA, 0);
     analogWrite(enB, 0);
     
@@ -99,7 +112,6 @@ void loop() {
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
     
-
     //check on left and right to choose the better place to go
     angle = 179;
     serv.write(angle);
