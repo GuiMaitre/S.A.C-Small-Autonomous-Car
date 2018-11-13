@@ -65,9 +65,21 @@ void loop() {
   Serial.print(distance);
   Serial.println(" cm");
 
+  //check on left and right to choose the better place to go
+  angle = 179;
+  serv.write(angle);
+  dist1 = getDistance();
+  delayMicroseconds(1000);
+  angle = 127;
+  serv.write(angle);
+  dist2 = getDistance();
+  delayMicroseconds(1000);
+  angle = 153;
+  serv.write(angle);
+
 
   //If no object at less than 30 centimeters continue to drive
-  if (distance > 100) {
+  if (distance > 100 && dist1 > 30 && dist2 > 30) {
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
     digitalWrite(in3, LOW);
@@ -79,7 +91,7 @@ void loop() {
   }
 
   //from 100cm to 20cm do a decresing speed depending of distance  try to fix speed before hitting wall
-  if (distance <= 100 && distance >25) {
+  if (distance <= 100 && distance >25 && dist1 > 30 && dist2 > 30) {
     intDist = (int)distance;
     digitalWrite(in1, LOW);
     digitalWrite(in2, HIGH);
@@ -91,7 +103,7 @@ void loop() {
 
    
   //Go backward go get less close to the wall
-  if (distance < 15){
+  if (distance < 15 && dist1 > 20 && dist2 > 20){
     analogWrite(enA, 0);
     analogWrite(enB, 0);
     digitalWrite(in1, HIGH);
@@ -112,17 +124,6 @@ void loop() {
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
     
-    //check on left and right to choose the better place to go
-    angle = 179;
-    serv.write(angle);
-    dist1 = getDistance();
-    delayMicroseconds(1000);
-    angle = 127;
-    serv.write(angle);
-    dist2 = getDistance();
-    delayMicroseconds(1000);
-    angle = 153;
-    serv.write(angle);
 
     if (dist1 >= dist2){
       //turn left
