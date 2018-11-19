@@ -12,7 +12,6 @@ Servo serv;
 
 
 int rotDirection = 0;
-int intDist = 0;
 const int TRIGGER_PIN = A0;
 const int ECHO_PIN = A1;
 const int inter_time = 250;
@@ -41,6 +40,46 @@ void setup() {
   serv.write(angle);
 }
 
+void turnLeft(int sped){
+      digitalWrite(in1, LOW);
+      digitalWrite(in2, HIGH);
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
+      analogWrite(enA, sped);
+      analogWrite(enB, sped);
+}
+
+void turnRight(int sped){
+      digitalWrite(in1, HIGH);
+      digitalWrite(in2, LOW);
+      digitalWrite(in3, LOW);
+      digitalWrite(in4, HIGH);
+      analogWrite(enA, sped);
+      analogWrite(enB, sped);
+}
+
+void moveFoward(int sped){
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+    analogWrite(enA, sped);
+    analogWrite(enB, sped);
+}
+
+void moveBackward(int sped){
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+    analogWrite(enA, sped);
+    analogWrite(enB, sped);
+}
+
+void stopWheels(){
+    analogWrite(enA, 0);
+    analogWrite(enB, 0);
+}
 
 //return distance from sensor
 int getDistance(){
@@ -55,99 +94,51 @@ int getDistance(){
   return distance;
 }
 
+
 void loop() {
   //Get information from the sonic range sensor
   float distance, dist1, dist2;
   distance = getDistance();
-  Serial.print("Data:");
-  Serial.print (millis() / 1000.0);
-  Serial.print(", d = ");
-  Serial.print(distance);
-  Serial.println(" cm");
-
-  //check on left and right to choose the better place to go
-  angle = 179;
-  serv.write(angle);
-  dist1 = getDistance();
-  delayMicroseconds(1000);
-  angle = 127;
-  serv.write(angle);
-  dist2 = getDistance();
-  delayMicroseconds(1000);
-  angle = 153;
-  serv.write(angle);
 
 
   //If no object at less than 30 centimeters continue to drive
-  if (distance > 100 && dist1 > 30 && dist2 > 30) {
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 200);
-    analogWrite(enB, 200);
+  if (distance > 30) {
+    moveFoward (200);
     rotDirection = 0;
-    Serial.println(rotDirection);
   }
 
-  //from 100cm to 20cm do a decresing speed depending of distance  try to fix speed before hitting wall
-  if (distance <= 100 && distance >25 && dist1 > 30 && dist2 > 30) {
-    intDist = (int)distance;
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, intDist+75);
-    analogWrite(enB, intDist+75);
-  }
-
-   
   //Go backward go get less close to the wall
-  if (distance < 15 && dist1 > 20 && dist2 > 20){
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
-    analogWrite(enA, 90);
-    analogWrite(enB, 90);
+  if (distance < 10){
+    stopWheels();
+    moveBackward(70);
   }
   
   //Stop motor and invert the motor direction to turn left or right
-  if (distance <= 25 && distance >=15) {
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+  if (distance <= 30 && distance >=10) {
+    stopWheels();
     
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
-    
+    //check on left and right to choose the better place to go
+    angle = 179;
+    serv.write(angle);
+    dist1 = getDistance();
+    delayMicroseconds(1000);
+    angle = 127;
+    serv.write(angle);
+    dist2 = getDistance();
+    delayMicroseconds(1000);
+    angle = 153;
+    serv.write(angle);
 
     if (dist1 >= dist2){
       //turn left
-      digitalWrite(in1, LOW);
-      digitalWrite(in2, HIGH);
-      digitalWrite(in3, HIGH);
-      digitalWrite(in4, LOW);
-      analogWrite(enA, 150);
-      analogWrite(enB, 100);
+      turnLeft(120);
       rotDirection = 1;
-      Serial.println(rotDirection);
       delayMicroseconds(5000);
       delay(inter_time*3);
     } else {
       //turn right
-      digitalWrite(in1, HIGH);
-      digitalWrite(in2, LOW);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, HIGH);
-
-      analogWrite(enA, 100);
-      analogWrite(enB, 150);
+      turnRight(120);
       rotDirection = 2;
-      Serial.println(rotDirection);
       delayMicroseconds(5000);
       delay(inter_time*3);
     }
